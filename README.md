@@ -1,5 +1,3 @@
-
-```markdown
 # OCR and NER Application
 
 This application utilizes Optical Character Recognition (OCR) and Named Entity Recognition (NER) to extract text and named entities from images and PDFs.
@@ -54,4 +52,3 @@ This application utilizes Optical Character Recognition (OCR) and Named Entity R
 - OCR functionality [pytesseract](https://github.com/madmaze/pytesseract).
 - NER functionality using 'xlm-roberta-large-finetuned-conll03-english' model .
 
-```
