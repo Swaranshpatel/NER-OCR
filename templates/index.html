@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NER & OCR</title>
+    <style>
+        div {
+            padding: 0.25%;
+        }
+        div.Content-Type {
+            width:70%;
+            margin:auto;
+            float: center;
+        }
+        div.Content-Type div.img {
+            width:50%;
+            float:right;
+        }
+        div.Content-Type div.pdf {
+            width:40%;
+            float:left;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+        }
+        textarea, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            /* resize: vertical; */
+        }
+        button[type="submit"] {
+            background-color: #72bbd5;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 50%;
+        }
+        button[type="submit"]:hover {
+            background-color: #359287;
+        }
+        div.Content-Type div.output {
+            width: 100%;
+            display: flex;
+            padding: 10px;
+            margin-top: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h2>Named Entity Recognition (NER) & Optical Character Recognition (OCR)</h2>
+    <div class="Content-Type">
+        <form id="ner_form" onsubmit="extractEntities(); return false;">
+            <label for="text">Enter Text for Named Entity Recognition (NER):</label><br>
+            <textarea id="text" name="text" rows="4" cols="50" placeholder="Enter text..."></textarea><br>
+            <button type="submit">Extract Named Entities</button>
+        </form>
+        <div class="img">
+            <form id="ocr_form" onsubmit="extractTextFromImage(event); return false;" enctype="multipart/form-data">
+                <label for="image">Upload Image for Optical Character Recognition (OCR):</label><br>
+                <input type="file" id="image" name="image" accept="image/*"><br>
+                <button type="submit">Extract Text from Image</button>
+            </form>
+        </div>
+        
+        <div class="pdf">
+            <form id="pdf_form" onsubmit="extractTextFromPdf(event); return false;" enctype="multipart/form-data">
+                <label for="pdf">Upload PDF for Optical Character Recognition (OCR):</label><br>
+                <input type="file" id="pdf" name="pdf" accept="application/pdf"><br>
+                <button type="submit">Extract Text from PDF</button>
+            </form>
+        </div>
+
+
+        
+        <div class="output" id="entity_output">
+            <h3>Extracted Named Entities:</h3>
+            <p></p>
+        </div>
+
+        
+        <div class="output" id="text_output">
+            <h3>Extracted Text:</h3>
+            <p></p>
+        </div>
+
+        
+    </div>
+
+    <script>
+        function updateEntityOutput(entities) {
+            const entityOutput = document.querySelector('#entity_output p');
+            entityOutput.innerText = entities;
+        }
+
+        function updateTextOutput(text) {
+            const textOutput = document.querySelector('#text_output p');
+            textOutput.innerText = text;
+        }
+
+        function extractEntities(text) {
+            console.log(text)
+            if (text === undefined) {
+                text = document.getElementById('text').value;
+            }
+            console.log(text)
+
+            fetch('/extract_entities', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'text': text,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.entities) {
+                    updateEntityOutput(data.entities);
+                } else {
+                    alert('Failed to extract named entities.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function extractTextFromImage(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('ocr_form'));
+            fetch('/extract_text', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.text) {
+                    updateTextOutput(data.text);
+                    extractEntities(data.text); // Extract entities when text is received
+                } else {
+                    alert('Failed to extract text from image.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function extractTextFromPdf(event) {
+            event.preventDefault();
+            const formData = new FormData(document.getElementById('pdf_form'));
+            fetch('/extract_text', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.text) {
+                    updateTextOutput(data.text);
+                    extractEntities(data.text); // Extract entities when text is received
+                } else {
+                    alert('Failed to extract text from PDF.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
