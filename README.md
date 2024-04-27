@@ -17,7 +17,7 @@ This application utilizes Optical Character Recognition (OCR) and Named Entity R
 
 1. Clone the repository:
    ```bash
-   git clone <repository_url>
+   git clone Swaranshpatel/NER-OCR
    ```
 2. Install dependencies:
    ```bash
